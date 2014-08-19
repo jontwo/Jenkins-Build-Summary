@@ -1,7 +1,15 @@
-These scripts can be used in the Jenkins script console to provide a summary of previous builds. Just paste it into http://<jenkins-server>/script and click Run.
+These scripts can be used in the Jenkins script console to provide a summary of results and settings. Just paste into http://<jenkins-server>/script and click Run.
+
+ListErrors
+==========
+This script summarises errors for the latest or all previous builds.
 
 Different jobs/builds can be examined by commenting/uncommenting the lines at the top of the script or adding new values.
 
 Some common errors have been added to the errors dictionary - if an error message does not match one of these strings, it is flagged as a new error. You can then add part of the message to the dictionary and run again so all similar errors are counted.
 
 At the bottom of the summary is a section that can be copied and pasted into a spreadsheet, containing build number, error summary (from dictionary), count, test name, and full error message columns.
+
+JenkinsConfig
+=============
+Look up build parameters for all jobs at once to save clicking through. At the moment, the script only shows if Delete Old Builds is enabled, but more properties can be added later.
