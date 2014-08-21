@@ -13,3 +13,7 @@ At the bottom of the summary is a section that can be copied and pasted into a s
 JenkinsConfig
 =============
 Look up build parameters for all jobs at once to save clicking through. At the moment, the script only shows if Delete Old Builds is enabled, but more properties can be added later.
+
+TestFailReasons
+===============
+Finds all failing instances of a particular test and shows the line number of the failure, along with the error message.
