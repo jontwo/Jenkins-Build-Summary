@@ -1,6 +1,6 @@
-//currentBuild = "All"
-currentBuild = "Latest"
-//currentBuild = 2077
+currentBuild = "All"
+//currentBuild = "Latest"
+//currentBuild = 190
 
 //currentJob = "All"
 currentJob = "RegressionAssignmentsUK(Chrome,Linux)"
@@ -19,16 +19,18 @@ currentKnownDefects = [
   "regression.assignments.search_and_select_image_through_text_activity_widget",
   "regression.assignments.complete_assignment_with_user_wall_message",
   "regression.assignments.open_help",
+  "regression.assignments.close_assignment_column_sortable_icons_visible_and_usable",
 ]
 
 removeKnownDefects = true
-summaryOnly = false
+summaryOnly = true
 
 // known errors
 errors = [
   "Action '_get_spinner' did not fail": 0,
   "asynchronous script timeout: result was not received in 60 seconds": 0,
   "{{{AssertionError :}}}": 0,
+  'AssertionError : Message: "In first_match(matches_text(css selector: div.ui-os-notifications': 0,
   "AssertionError : None == None": 0,
   "AssertionError : Timed out waiting for": 0,
   "AttributeError : 'module' object has no attribute": 0,
@@ -67,7 +69,7 @@ for (job in Hudson.instance.items) {
             if (!summaryOnly) println("  Build: $build.number Time: $build.time")
             fullMessage = ''
             testName = ''
-      totalErrors = 0
+            totalErrors = 0
             for (line in build.getLog(Integer.MAX_VALUE)) {
               // get test name
               if (line.startsWith('ERROR:') || line.startsWith('FAIL:')) {
@@ -124,7 +126,13 @@ for (job in Hudson.instance.items) {
                 }
               }
             }
-            if (summaryOnly) println("  Build: $build.number Time: $build.time Errors: " + totalErrors)
+            if (summaryOnly) {
+              use (groovy.time.TimeCategory) {
+                d = new Date(build.duration) - new Date(0)
+                println(String.format("  Build: $build.number Time: $build.time Duration: %1d:%02d:%02d Errors: %d",
+                                      d.hours, d.minutes, d.seconds, totalErrors))
+              }
+            }
             buildCount++
           }
         }
