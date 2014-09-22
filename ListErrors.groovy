@@ -1,6 +1,6 @@
-currentBuild = "All"
-//currentBuild = "Latest"
-//currentBuild = 190
+//currentBuild = "All"
+currentBuild = "Latest"
+//currentBuild = 193
 
 //currentJob = "All"
 currentJob = "RegressionAssignmentsUK(Chrome,Linux)"
@@ -23,7 +23,7 @@ currentKnownDefects = [
 ]
 
 removeKnownDefects = true
-summaryOnly = true
+summaryOnly = false
 
 // known errors
 errors = [
@@ -41,6 +41,10 @@ errors = [
   "Element is not clickable at point": 0,
   "Element is not displayed": 0,
   "ElementNotVisibleException": 0,
+  /Expected attribute: '(?:^|\\s)headerSortDown(?:\\s|$)'. Actual attribute: u'header'/: 0,
+  /Expected attribute: '(?:^|\\s)headerSortDown(?:\\s|$)'. Actual attribute: u'header headerSortUp'/: 0,
+  /Expected attribute: '(?:^|\\s)headerSortUp(?:\\s|$)'. Actual attribute: u'header'/: 0,
+  /Expected attribute: '(?:^|\\s)headerSortUp(?:\\s|$)'. Actual attribute: u'header headerSortDown'/: 0,
   "found no elements within 30.00 seconds.  We expected 1.": 0,
   "HTTPError : HTTP Error 500: Internal Server Error": 0,
   "ImportError : cannot import name": 0,
@@ -51,10 +55,17 @@ errors = [
   "StaleElementReferenceException": 0,
   "ValueError : I/O operation on closed file": 0,
 ]
+searchError = ''
+//searchError = 'Other element would receive the click: <div class="ui-os-app-iframe-overlay"'
+
 newErrors = [:]
 errorTable = []
+errorCount = 0
 inErrorMessage = false
 
+if (searchError != '') {
+  println ('Looking for error: ' + searchError)
+}
 for (job in Hudson.instance.items) {
   println("Examining job $job.name ")
   if (job.lastBuild != null && (job.name == currentJob || currentJob == "All")) {
@@ -77,7 +88,7 @@ for (job in Hudson.instance.items) {
                 if (removeKnownDefects && currentKnownDefects.contains(testName)) {
                   testName = ''
                 } else {
-                  if (!summaryOnly) println('\t' + testName)
+                  if (!summaryOnly && searchError == '') println('\t' + testName)
                 }
                 errorMessage = ""
                 inErrorMessage = false
@@ -96,32 +107,42 @@ for (job in Hudson.instance.items) {
                 if (line.endsWith('}}}') && inErrorMessage) {
                   inErrorMessage = false
 
-                  // check for known error
-                  found = false
-                  for (err in errors.keySet()) {
-                    if (errorMessage.contains(err)) {
-                      errors[err] += 1
-                      errorCount = errors[err]
-                      found = true
-                      // only keep summary message
+                  if (searchError == '') {
+                    // check for known error
+                    found = false
+                    for (err in errors.keySet()) {
+                      if (errorMessage.contains(err)) {
+                        errors[err] += 1
+                        errorCount = errors[err]
+                        found = true
+                        // only keep summary message
+                        fullMessage = errorMessage
+                        errorMessage = err
+                      }
+                    }
+                    if (!found) {
+                      if (newErrors.keySet().contains(errorMessage)) {
+                        newErrors[errorMessage] +=1
+                        errorCount = newErrors[errorMessage]
+                      } else {
+                        if (!summaryOnly) println('\t\t***New error***')
+                        newErrors.put(errorMessage, 1)
+                        errorCount = 1
+                      }
                       fullMessage = errorMessage
-                      errorMessage = err
                     }
-                  }
-                  if (!found) {
-                    if (newErrors.keySet().contains(errorMessage)) {
-                      newErrors[errorMessage] +=1
-                      errorCount = newErrors[errorMessage]
-                    } else {
-                      if (!summaryOnly) println('\t\t***New error***')
-                      newErrors.put(errorMessage, 1)
-                      errorCount = 1
-                    }
-                    fullMessage = errorMessage
-                  }
 
-                  if (!summaryOnly) println('\t\t' + errorMessage)
-                  errorTable.add([build.number, errorMessage, errorCount, testName, fullMessage])
+                    if (!summaryOnly) println("\t\t$errorMessage")
+                    errorTable.add([build.number, errorMessage, errorCount, testName, fullMessage])
+                  } else {
+                    if (errorMessage.contains(searchError)) {
+                      fullMessage = errorMessage
+                      errorMessage = searchError
+                      errorCount += 1
+                      println ('\t' + testName)
+                      errorTable.add([build.number, errorMessage, errorCount, testName, fullMessage])
+                    }
+                  }
                   errorMessage = ""
                 }
               }
@@ -140,17 +161,21 @@ for (job in Hudson.instance.items) {
     }
     // output results
     println('Summary:\n========')
-    sum = 0
-    errors.each{
-      if (it.value > 0) {
+    if (searchError == '') {
+      sum = 0
+      errors.each{
+        if (it.value > 0) {
+          println(it.value + ': ' + it.key)
+          sum += it.value
+        }
+      }
+      println(newErrors.size() + ' new errors found')
+      newErrors.each{
         println(it.value + ': ' + it.key)
         sum += it.value
       }
-    }
-    println(newErrors.size() + ' new errors found')
-    newErrors.each{
-      println(it.value + ': ' + it.key)
-      sum += it.value
+    } else {
+      sum = errorCount
     }
     println('----------------\nTotal errors: ' + sum)
     println()
