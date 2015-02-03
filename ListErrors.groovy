@@ -3,40 +3,33 @@ currentBuild = "Latest"
 //currentBuild = 193
 
 //currentJob = "All"
-currentJob = "RegressionAssignmentsUK(Chrome,Linux)"
-//currentJob = "highlevel"
-//currentJob = "Cleanup"
+currentJob = "Superbreak_mobile"
 
 currentConfig = "All"
-//currentConfig = "Browser_OS=linux,Browser_Type=Chrome,Build_Type=malaysia,Environment_Type=clean"
-//currentConfig = "Browser_OS=linux,Build_Type=uk-primary,Environment_Type=clean"
+//currentConfig = "Browser_Type=mobile,label=linux"
+//currentConfig = "Browser_Type=desktop,label=linux"
+//currentConfig = "Browser_Type=mobile,label=osx"
+//currentConfig = "Browser_Type=desktop,label=osx"
 
 currentKnownDefects = [
-  "regression.assignments.filter_open_assignments_on_issue_date",
-  "regression.assignments.filter_open_assignments_on_due_date",
-  "regression.assignments.on_click_selected_breadcrumb_link_returns_users_to_relevant_page",
-  "regression.assignments.enter_and_delete_user_wall_messages",
-  "regression.assignments.search_and_select_image_through_text_activity_widget",
-  "regression.assignments.complete_assignment_with_user_wall_message",
-  "regression.assignments.open_help",
-  "regression.assignments.close_assignment_column_sortable_icons_visible_and_usable",
+  "scenarios.hotel_add_rail",
+  "scenarios.hotel_plus_rail",
+  "scenarios.hotel_only",
 ]
 
-removeKnownDefects = true
+removeKnownDefects = false
 summaryOnly = false
 
 // known errors
 errors = [
-  "Action '_get_spinner' did not fail": 0,
   "asynchronous script timeout: result was not received in 60 seconds": 0,
   "{{{AssertionError :}}}": 0,
-  'AssertionError : Message: "In first_match(matches_text(css selector: div.ui-os-notifications': 0,
+  "AssertionError : 20 not greater than or equal to": 0,
+  "AssertionError : Element text should be": 0,
   "AssertionError : None == None": 0,
+  "AssertionError : This test is not implemented": 0,
   "AssertionError : Timed out waiting for": 0,
   "AttributeError : 'module' object has no attribute": 0,
-  "css selector 'table.closed tbody tr.assign td input.check' found 5 elements": 0,
-  "css selector 'table.table tbody tr:nth-child(1) td a.student-view-popover' found 2 elements": 0,
-  "css selector 'form > div.textarea.cke_editable.cke_editable_inline' found 3 elements": 0,
   "Duplicate user row in export": 0,
   "Element is not clickable at point": 0,
   "Element is not displayed": 0,
@@ -53,7 +46,9 @@ errors = [
   "'NoneType' object has no attribute": 0,
   "Precisely one of the elements returned by": 0,
   "StaleElementReferenceException": 0,
+  "URLError : <urlopen error [Errno 111] Connection refused>": 0,
   "ValueError : I/O operation on closed file": 0,
+  "WebDriverException : Message: An unknown server-side error occurred while processing the command.": 0,
 ]
 searchError = ''
 //searchError = 'Other element would receive the click: <div class="ui-os-app-iframe-overlay"'
@@ -133,14 +128,14 @@ for (job in Hudson.instance.items) {
                     }
 
                     if (!summaryOnly) println("\t\t$errorMessage")
-                    errorTable.add([build.number, errorMessage, errorCount, testName, fullMessage])
+                    errorTable.add([build.number, errorMessage, errorCount, testName, config.name, fullMessage])
                   } else {
                     if (errorMessage.contains(searchError)) {
                       fullMessage = errorMessage
                       errorMessage = searchError
                       errorCount += 1
                       println ('\t' + testName)
-                      errorTable.add([build.number, errorMessage, errorCount, testName, fullMessage])
+                      errorTable.add([build.number, errorMessage, errorCount, testName, config.name, fullMessage])
                     }
                   }
                   errorMessage = ""
@@ -180,7 +175,8 @@ for (job in Hudson.instance.items) {
     println('----------------\nTotal errors: ' + sum)
     println()
     // paste this into google docs sheet
-    errorTable.each{println(it[0] + '\t' + it[1] + '\t' + it[2] + '\t' + it[3] + '\t' + it[4])}
+    errorTable.each{println(it[0] + '\t' + it[1] + '\t' + it[2] + '\t' + it[3] + '\t' + it[4] + '\t' + it[5])}
+    //errorTable.each{println(it[0] + '\t' + it[3])}
     println()
   }
 }
